@@ -14,7 +14,7 @@ export default class WplaceAPI {
 	}
 
 	async downloadTile(tileX: number, tileY: number, path: string): Promise<Result<void, Error>> {
-		const res = await this.get(format(ROUTES.GET_TILE, tileX, tileY))
+		const res = await this.getPlain(format(ROUTES.GET_TILE, tileX, tileY))
 
 		if (!res.ok) {
 			return err(new Error(`Failed to download tile. Status: ${res.status}`))
@@ -31,7 +31,7 @@ export default class WplaceAPI {
 	}
 
 	async getTile(tileX: number, tileY: number) {
-		const res = await this.get(format(ROUTES.GET_TILE, tileX, tileY))
+		const res = await this.getPlain(format(ROUTES.GET_TILE, tileX, tileY))
 
 		if (!res.ok) {
 			return err(new Error(`Failed to download tile. Status: ${res.status}`))
@@ -46,16 +46,49 @@ export default class WplaceAPI {
 		return ok(png)
 	}
 
-	private async get(route: string) {
+	async getPixel(tileX: number, tileY: number, pixelX: number, pixelY: number) {
+		const result = await this.get(format(ROUTES.GET_PIXEL, tileX, tileY, pixelX, pixelY))
+
+		if (!result.ok) {
+			return err(result.error)
+		}
+
+		const { res, data } = result.value
+
+		if (!res.ok) {
+			return err(new Error(`Failed to get pixel. Status: ${res.status}`))
+		}
+
+		return ok(data)
+	}
+
+	private async getPlain(route: string): Promise<Response> {
 		console.group(`GET ${route}`)
 		const res = await fetch(`${this.options.API_ROOT}${route}`, {
 			method: "GET"
 		})
 		console.log(`${res.status} ${res.statusText} (${res.headers.get("Content-Type")})`)
 		
-		//const data = await res.json()
 		console.groupEnd()
 		return res
+	}
+
+	private async get(route: string): Promise<Result<{ res: Response, data: unknown }, Error>> {
+		console.group(`GET ${route}`)
+		const res = await fetch(`${this.options.API_ROOT}${route}`, {
+			method: "GET"
+		})
+		console.log(`${res.status} ${res.statusText} (${res.headers.get("Content-Type")})`)
+		
+		try {
+			const data = await res.json()
+			return ok({ res, data })
+		} catch (e) {
+			console.log("JSON parse failed.")
+			return err(new Error("Failed to parse response as JSON.", { cause: e }))
+		} finally {
+			console.groupEnd()
+		}
 	}
 
 }
