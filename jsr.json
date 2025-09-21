@@ -1,6 +1,6 @@
 {
   "name": "@j0code/wplace-api",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "GPL-3.0-or-later",
   "exports": "./src/main.ts",
   "exclude": [

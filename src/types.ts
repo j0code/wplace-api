@@ -1,4 +1,10 @@
-import { type } from "arktype";
+import { type } from "arktype"
+
+/**
+ * Types for Wplace API
+ * @module
+ */
+/** */
 
 export const Pixel = type({
 	paintedBy: {
@@ -18,6 +24,12 @@ export const Pixel = type({
 	}
 })
 
+/**
+ * Pixel metadata as returned by the API
+ * 
+ * Endpoints:
+ * - GET /s0/pixel/{TX}/{TY}?x={PX}&y={PY}
+ */
 export type Pixel = typeof Pixel.infer
 
 export const Profile = type({
@@ -55,6 +67,12 @@ export const Profile = type({
 	timeoutUntil: "string.date.iso" // ISO 8601 date string
 })
 
+/**
+ * Profile data
+ * 
+ * Endpoints:
+ * - GET /me
+ */
 export type Profile = typeof Profile.infer
 
 export const RandomPixel = type({
@@ -68,4 +86,10 @@ export const RandomPixel = type({
 	}
 })
 
+/**
+ * Random pixel coordinates
+ * 
+ * Endpoints:
+ * - GET /s0/tile/random
+ */
 export type RandomPixel = typeof RandomPixel.infer

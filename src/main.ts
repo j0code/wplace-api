@@ -7,14 +7,30 @@ import { err, ok, type Result } from "./result.js"
 import { Pixel, RandomPixel } from "./types.js"
 import { type } from "arktype"
 
+/**
+ * Wplace API client
+ * @module
+ */
 export default class WplaceAPI {
 
+	/** Options of API instance */
 	public readonly options: APIOptions
 
+	/**
+	 * Create a new WplaceAPI instance
+	 * @param options options for the API client
+	 */
 	constructor(options?: Partial<APIOptions>) {
 		this.options = compileOptions(options, DEFAULT_API_OPTIONS)
 	}
 
+	/**
+	 * Download a tile and save it to a file
+	 * @param tileX x-coordinate of tile
+	 * @param tileY y-coordinate of tile
+	 * @param path path to save the tile to
+	 * @returns Ok(void) on success, Err(Error) on failure
+	 */
 	async downloadTile(tileX: number, tileY: number, path: string): Promise<Result<void, Error>> {
 		const res = await this.getPlain(format(ROUTES.GET_TILE, tileX, tileY))
 
@@ -32,6 +48,13 @@ export default class WplaceAPI {
 		return ok()
 	}
 
+	/**
+	 * Get a tile as a PNG object
+	 * @param tileX x-coordinate of tile
+	 * @param tileY y-coordinate of tile
+	 * @returns Ok(PNG) on success, Err(Error) on failure
+	 * @see {@link https://www.npmjs.com/package/pngjs}
+	 */
 	async getTile(tileX: number, tileY: number): Promise<Result<PNG, Error>> {
 		const res = await this.getPlain(format(ROUTES.GET_TILE, tileX, tileY))
 
@@ -48,6 +71,15 @@ export default class WplaceAPI {
 		return ok(png)
 	}
 
+	/**
+	 * Get pixel metadata
+	 * @param tileX x-coordinate of tile
+	 * @param tileY y-coordinate of tile
+	 * @param pixelX x-coordinate of pixel on tile
+	 * @param pixelY y-coordinate of pixel on tile
+	 * @returns Ok(Pixel) on success, Err(Error | ArkError) on failure
+	 * @see {@link https://arktype.io/docs/intro/setup}
+	 */
 	async getPixel(tileX: number, tileY: number, pixelX: number, pixelY: number): Promise<Result<Pixel, Error | type.errors>> {
 		const result = await this.get(format(ROUTES.GET_PIXEL, tileX, tileY, pixelX, pixelY))
 		if (!result.ok) return result
@@ -67,6 +99,11 @@ export default class WplaceAPI {
 		return ok(parsedData)
 	}
 
+	/**
+	 * Get random pixel coordinates
+	 * @returns Ok(RandomPixel) on success, Err(Error | ArkError) on failure
+	 * @see {@link https://arktype.io/docs/intro/setup}
+	 */
 	async getRandomPixel(): Promise<Result<RandomPixel, Error | type.errors>> {
 		const result = await this.get(ROUTES.GET_RANDOM_PIXEL)
 		if (!result.ok) return result
@@ -86,6 +123,11 @@ export default class WplaceAPI {
 		return ok(parsedData)
 	}
 
+	/**
+	 * Internal: Perform a GET request (no json parsing)
+	 * @param route API route to fetch
+	 * @returns Response object
+	 */
 	private async getPlain(route: string): Promise<Response> {
 		console.group(`GET ${route}`)
 		const res = await fetch(`${this.options.API_ROOT}${route}`, {
@@ -97,6 +139,12 @@ export default class WplaceAPI {
 		return res
 	}
 
+	/**
+	 * Internal: Perform a GET request and parse JSON
+	 * @param route API route to fetch
+	 * @param headers optional HTTP headers
+	 * @returns Ok({ res, data }) on success, Err(Error) on failure
+	 */
 	private async get(route: string, headers?: Headers): Promise<Result<{ res: Response, data: unknown }, Error>> {
 		console.group(`GET ${route}`)
 		const res = await fetch(`${this.options.API_ROOT}${route}`, {
@@ -118,10 +166,15 @@ export default class WplaceAPI {
 
 }
 
+/**
+ * Options for the Wplace API client
+ */
 export type APIOptions = {
+	/** Base URL for the API */
 	API_ROOT: string
 }
 
+/** Default options for the Wplace API client */
 const DEFAULT_API_OPTIONS: APIOptions = {
 	API_ROOT: "https://backend.wplace.live"
 }
