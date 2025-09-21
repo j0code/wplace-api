@@ -119,13 +119,13 @@ Requires Authentication
 
 Requires Authentication
 
-#### Query Parameters
+#### URL Parameters
 
-> type = alliance, region/{countryID}, country, player, alliance
+> {type} = alliance, region/{countryID}, country, player, alliance
 > 
-> timeframe = today, week, month or all-time
+> {timeframe} = today, week, month or all-time
 > 
-> countryID can be 0 to show all
+> {countryID} can be 0 to show all
 
 #### Response
 > ```jsonc
@@ -209,10 +209,12 @@ The j cookie is removed via HTTP Response Header (and the session is invalidated
 
 ### Map
 
-style = liberty (used in wplace), bright, positron, dark, fiord
-
 #### Route
 > **GET** https://maps.wplace.live/styles/{style}
+
+#### URL Parameters
+
+> {style} = liberty (used in wplace), bright, positron, dark, fiord
 
 #### Response
 > [MapLibre Style](https://maplibre.org/maplibre-style-spec/)
