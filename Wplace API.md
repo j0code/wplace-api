@@ -113,6 +113,7 @@ Requires Authentication
 ### Leaderboard
 
 type = alliance, region/{countryID}, country, player, alliance
+
 timeframe = today, week, month or all-time
 
 countryID can be 0 to show all
@@ -186,6 +187,34 @@ Requires Authentication
 > **Note:** Not included to not make botting easier.
 > 
 > Pixels **have** to be placed by humans. Botting is against Wplace's offical rules.
+
+### Logout
+
+#### Route
+> **POST** https://backend.wplace.live/auth/logout
+
+Requires Authentication
+
+#### Response
+```json
+{
+    "success": true
+}
+```
+The j cookie is removed via HTTP Response Header (and the session is invalidated on the server).
+
+### Map
+
+style = liberty (used in wplace), bright, positron, dark, fiord
+
+#### Route
+> **GET** https://maps.wplace.live/styles/{style}
+
+#### Response
+[MapLibre Style](https://maplibre.org/maplibre-style-spec/)
+
+Natural Earth Source: https://maps.wplace.live/natural_earth/ne2sr/{z}/{x}/{y}.png
+OpenMapTiles Vector Source: described at https://maps.wplace.live/planet
 
 ## JWT
 
