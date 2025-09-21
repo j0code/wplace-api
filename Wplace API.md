@@ -211,11 +211,11 @@ style = liberty (used in wplace), bright, positron, dark, fiord
 > **GET** https://maps.wplace.live/styles/{style}
 
 #### Response
-[MapLibre Style](https://maplibre.org/maplibre-style-spec/)
-
-Natural Earth Source: https://maps.wplace.live/natural_earth/ne2sr/{z}/{x}/{y}.png
-
-OpenMapTiles Vector Source: described at https://maps.wplace.live/planet
+> [MapLibre Style](https://maplibre.org/maplibre-style-spec/)
+> 
+> Natural Earth Source: https://maps.wplace.live/natural_earth/ne2sr/{z}/{x}/{y}.png
+> 
+> OpenMapTiles Vector Source: described at https://maps.wplace.live/planet
 
 ## JWT
 
