@@ -196,11 +196,11 @@ Requires Authentication
 Requires Authentication
 
 #### Response
-```json
-{
-    "success": true
-}
-```
+> ```json
+> {
+>     "success": true
+> }
+> ```
 The j cookie is removed via HTTP Response Header (and the session is invalidated on the server).
 
 ### Map
