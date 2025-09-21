@@ -1,13 +1,30 @@
 {
   "name": "wplace-api",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Unofficial library to interact with the Wplace.live backend API",
+  "keywords": [
+    "wplace",
+    "api",
+    "rest"
+  ],
+  "homepage": "https://github.com/j0code/wplace-api#readme",
+  "bugs": {
+    "url": "https://github.com/j0code/wplace-api/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/j0code/wplace-api.git"
+  },
   "license": "GPL-3.0-or-later",
   "author": "j0code",
   "type": "module",
   "main": "dist/main.js",
+  "types": "./dist/main.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+	
   },
   "devDependencies": {
     "@types/node": "^24.5.2",
