@@ -2,6 +2,8 @@ import { format } from "node:util"
 import ROUTES from "./routes.js"
 import { mkdir, writeFile } from "node:fs/promises"
 import { dirname } from "node:path"
+import { PNG } from "pngjs"
+import { err, ok, type Result } from "./result.js"
 
 export default class WplaceAPI {
 
@@ -11,11 +13,11 @@ export default class WplaceAPI {
 		this.options = compileOptions(options, DEFAULT_API_OPTIONS)
 	}
 
-	async downloadTile(tileX: number, tileY: number, path: string) {
+	async downloadTile(tileX: number, tileY: number, path: string): Promise<Result<void, Error>> {
 		const res = await this.get(format(ROUTES.GET_TILE, tileX, tileY))
 
 		if (!res.ok) {
-			throw new Error(`Failed to download tile. Status: ${res.status}`)
+			return err(new Error(`Failed to download tile. Status: ${res.status}`))
 		}
 
 		const arrayBuffer = await res.arrayBuffer()
@@ -24,6 +26,24 @@ export default class WplaceAPI {
 		await saveFile(path, buffer)
 
 		console.log(`Downloaded tile at (${tileX}:${tileY}) to ${path}`)
+
+		return ok()
+	}
+
+	async getTile(tileX: number, tileY: number) {
+		const res = await this.get(format(ROUTES.GET_TILE, tileX, tileY))
+
+		if (!res.ok) {
+			return err(new Error(`Failed to download tile. Status: ${res.status}`))
+		}
+
+		const arrayBuffer = await res.arrayBuffer()
+		const buffer = Buffer.from(arrayBuffer)
+		const png = PNG.sync.read(buffer)
+
+		console.log(`Got tile at (${tileX}:${tileY})`)
+
+		return ok(png)
 	}
 
 	private async get(route: string) {
