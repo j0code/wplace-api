@@ -67,7 +67,7 @@ export default class WplaceAPI {
 		return ok(parsedData)
 	}
 
-	async getRandomPixel(): Promise<Result<unknown, Error | type.errors>> {
+	async getRandomPixel(): Promise<Result<RandomPixel, Error | type.errors>> {
 		const result = await this.get(ROUTES.GET_RANDOM_PIXEL)
 		if (!result.ok) return result
 
@@ -83,7 +83,7 @@ export default class WplaceAPI {
 			return err(parsedData)
 		}
 
-		return ok(data)
+		return ok(parsedData)
 	}
 
 	private async getPlain(route: string): Promise<Response> {

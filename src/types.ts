@@ -67,3 +67,5 @@ export const RandomPixel = type({
 		y: "number",
 	}
 })
+
+export type RandomPixel = typeof RandomPixel.infer
