@@ -119,7 +119,7 @@ timeframe = today, week, month or all-time
 countryID can be 0 to show all
 
 #### Route
-> **GET** https://backend.wplace.live/alliance/leaderboard/{timeframe}
+> **GET** https://backend.wplace.live/{type}/leaderboard/{timeframe}
 
 Requires Authentication
 
