@@ -4,6 +4,8 @@ import { mkdir, writeFile } from "node:fs/promises"
 import { dirname } from "node:path"
 import { PNG } from "pngjs"
 import { err, ok, type Result } from "./result.js"
+import { Pixel, RandomPixel } from "./types.js"
+import { type } from "arktype"
 
 export default class WplaceAPI {
 
@@ -30,7 +32,7 @@ export default class WplaceAPI {
 		return ok()
 	}
 
-	async getTile(tileX: number, tileY: number) {
+	async getTile(tileX: number, tileY: number): Promise<Result<PNG, Error>> {
 		const res = await this.getPlain(format(ROUTES.GET_TILE, tileX, tileY))
 
 		if (!res.ok) {
@@ -46,17 +48,39 @@ export default class WplaceAPI {
 		return ok(png)
 	}
 
-	async getPixel(tileX: number, tileY: number, pixelX: number, pixelY: number) {
+	async getPixel(tileX: number, tileY: number, pixelX: number, pixelY: number): Promise<Result<Pixel, Error | type.errors>> {
 		const result = await this.get(format(ROUTES.GET_PIXEL, tileX, tileY, pixelX, pixelY))
-
-		if (!result.ok) {
-			return err(result.error)
-		}
+		if (!result.ok) return result
 
 		const { res, data } = result.value
 
 		if (!res.ok) {
 			return err(new Error(`Failed to get pixel. Status: ${res.status}`))
+		}
+
+		const parsedData = Pixel(data)
+
+		if (parsedData instanceof type.errors) {
+			return err(parsedData)
+		}
+
+		return ok(parsedData)
+	}
+
+	async getRandomPixel(): Promise<Result<unknown, Error | type.errors>> {
+		const result = await this.get(ROUTES.GET_RANDOM_PIXEL)
+		if (!result.ok) return result
+
+		const { res, data } = result.value
+
+		if (!res.ok) {
+			return err(new Error(`Failed to get random pixel. Status: ${res.status}`))
+		}
+
+		const parsedData = RandomPixel(data)
+
+		if (parsedData instanceof type.errors) {
+			return err(parsedData)
 		}
 
 		return ok(data)
@@ -73,10 +97,11 @@ export default class WplaceAPI {
 		return res
 	}
 
-	private async get(route: string): Promise<Result<{ res: Response, data: unknown }, Error>> {
+	private async get(route: string, headers?: Headers): Promise<Result<{ res: Response, data: unknown }, Error>> {
 		console.group(`GET ${route}`)
 		const res = await fetch(`${this.options.API_ROOT}${route}`, {
-			method: "GET"
+			method: "GET",
+			headers: headers ?? {}
 		})
 		console.log(`${res.status} ${res.statusText} (${res.headers.get("Content-Type")})`)
 		
