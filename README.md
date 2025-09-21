@@ -3,7 +3,7 @@
 Unofficial library to interact with the Wplace.live backend API
 
 ## Docs
-https://jsr.io/@j0code/wplace-api@0.1.0/doc
+https://jsr.io/@j0code/wplace-api/doc
 
 ## Install
 ### JSR (node.js)
