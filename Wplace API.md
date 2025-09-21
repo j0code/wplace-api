@@ -6,8 +6,10 @@ Ver: 250921
 
 ### Tiles
 
-**GET** https://backend.wplace.live/files/s0/tiles/{TX}/{TY}.png
+#### Route
+> **GET** https://backend.wplace.live/files/s0/tiles/{TX}/{TY}.png
 
+#### Response
 => 1.000x1.000px PNG
 
 ### Pixel
@@ -112,16 +114,18 @@ Requires Authentication
 
 ### Leaderboard
 
-type = alliance, region/{countryID}, country, player, alliance
-
-timeframe = today, week, month or all-time
-
-countryID can be 0 to show all
-
 #### Route
 > **GET** https://backend.wplace.live/{type}/leaderboard/{timeframe}
 
 Requires Authentication
+
+#### Query Parameters
+
+> type = alliance, region/{countryID}, country, player, alliance
+> 
+> timeframe = today, week, month or all-time
+> 
+> countryID can be 0 to show all
 
 #### Response
 > ```jsonc
@@ -273,7 +277,9 @@ Object.values(countries).sort()
 ### Colors
 
 0: Transparent
+
 1-31: Free Colors* (in order as shown in the place menu)
+
 32+: Extra Colors (in order as shown in the place menu)
 
 *with some exceptions
