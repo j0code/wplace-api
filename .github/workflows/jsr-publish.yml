@@ -12,5 +12,12 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
+
+      - name: Generate node_modules
+        working-directory: ./api
+        run: |
+          npm i
+          git checkout -- ./package-lock.json
+      
       - name: Publish package
         run: npx jsr publish --allow-slow-types
