@@ -93,3 +93,5 @@ export const RandomPixel = type({
  * - GET /s0/tile/random
  */
 export type RandomPixel = typeof RandomPixel.infer
+
+export type HeaderMap = Record<string, string>

@@ -2,7 +2,7 @@
  * Result type representing either a success (ok) or an error (err).
  * @module
  */
-export type Result<T, E> = {
+export type Result<T = void, E = never> = {
 	ok: true
 	value: T
 } | {

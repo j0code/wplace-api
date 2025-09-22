@@ -4,7 +4,7 @@ import { mkdir, writeFile } from "node:fs/promises"
 import { dirname } from "node:path"
 import { PNG } from "pngjs"
 import { err, ok, type Result } from "./result.js"
-import { Pixel, RandomPixel } from "./types.js"
+import { Pixel, RandomPixel, type HeaderMap } from "./types.js"
 import { type } from "arktype"
 
 /**
@@ -26,15 +26,27 @@ export default class WplaceAPI {
 
 	/**
 	 * Download a tile and save it to a file
+	 * 
+	 * Ok(true) means the tile was downloaded and saved successfully.
+	 * 
+	 * Ok(false) means the tile was empty (404).
+	 * 
+	 * Err(Error) means there was an error during the process.
 	 * @param tileX x-coordinate of tile
 	 * @param tileY y-coordinate of tile
 	 * @param path path to save the tile to
-	 * @returns Ok(void) on success, Err(Error) on failure
+	 * @returns Ok(boolean) on success, Err(Error) on failure
 	 */
-	async downloadTile(tileX: number, tileY: number, path: string): Promise<Result<void, Error>> {
-		const res = await this.getPlain(format(ROUTES.GET_TILE, tileX, tileY))
+	async downloadTile(tileX: number, tileY: number, path: string): Promise<Result<boolean, Error>> {
+		const result = await this.getPlain(format(ROUTES.GET_TILE, tileX, tileY))
+		if (!result.ok) return result
+
+		const res = result.value
 
 		if (!res.ok) {
+			if (res.status == 404) {
+				return ok(false) // tile empty
+			}
 			return err(new Error(`Failed to download tile. Status: ${res.status}`))
 		}
 
@@ -43,30 +55,39 @@ export default class WplaceAPI {
 
 		await saveFile(path, buffer)
 
-		console.log(`Downloaded tile at (${tileX}:${tileY}) to ${path}`)
-
-		return ok()
+		return ok(true)
 	}
 
 	/**
 	 * Get a tile as a PNG object
+	 * 
+	 * Ok(PNG) means the tile was downloaded successfully.
+	 * 
+	 * Ok(undefined) means the tile was empty (404).
+	 * 
+	 * Err(Error) means there was an error during the process.
+	 * 
 	 * @param tileX x-coordinate of tile
 	 * @param tileY y-coordinate of tile
-	 * @returns Ok(PNG) on success, Err(Error) on failure
+	 * @returns Ok(PNG | undefined) on success, Err(Error) on failure
 	 * @see {@link https://www.npmjs.com/package/pngjs}
 	 */
-	async getTile(tileX: number, tileY: number): Promise<Result<PNG, Error>> {
-		const res = await this.getPlain(format(ROUTES.GET_TILE, tileX, tileY))
+	async getTile(tileX: number, tileY: number): Promise<Result<PNG | undefined, Error>> {
+		const result = await this.getPlain(format(ROUTES.GET_TILE, tileX, tileY))
+		if (!result.ok) return result
+
+		const res = result.value
 
 		if (!res.ok) {
+			if (res.status == 404) {
+				return ok(undefined) // tile empty
+			}
 			return err(new Error(`Failed to download tile. Status: ${res.status}`))
 		}
 
 		const arrayBuffer = await res.arrayBuffer()
 		const buffer = Buffer.from(arrayBuffer)
 		const png = PNG.sync.read(buffer)
-
-		console.log(`Got tile at (${tileX}:${tileY})`)
 
 		return ok(png)
 	}
@@ -128,15 +149,30 @@ export default class WplaceAPI {
 	 * @param route API route to fetch
 	 * @returns Response object
 	 */
-	private async getPlain(route: string): Promise<Response> {
-		console.group(`GET ${route}`)
-		const res = await fetch(`${this.options.API_ROOT}${route}`, {
-			method: "GET"
-		})
-		console.log(`${res.status} ${res.statusText} (${res.headers.get("Content-Type")})`)
-		
-		console.groupEnd()
-		return res
+	private async getPlain(route: string, headers: HeaderMap = {}): Promise<Result<Response, Error>> {
+		let res: Response
+
+		try {
+			res = await fetch(`${this.options.API_ROOT}${route}`, {
+				method: "GET",
+				headers: {
+					...headers,
+					"User-Agent": this.options.userAgent
+				}
+			})
+		} catch (e) {
+			return err(e as Error)
+		}
+
+		if (!res.ok && res.status == 429) {
+			const retryAfter = res.headers.get("Retry-After")
+			const waitTime = retryAfter ? parseInt(retryAfter) * 1000 : this.options.defaultRetryAfter
+			//console.log(`Rate limited. Retrying after ${waitTime}ms...`)
+
+			return sleep(waitTime).then(() => this.getPlain(route, headers))
+		}
+
+		return ok(res)
 	}
 
 	/**
@@ -145,23 +181,18 @@ export default class WplaceAPI {
 	 * @param headers optional HTTP headers
 	 * @returns Ok({ res, data }) on success, Err(Error) on failure
 	 */
-	private async get(route: string, headers?: Headers): Promise<Result<{ res: Response, data: unknown }, Error>> {
-		console.group(`GET ${route}`)
-		const res = await fetch(`${this.options.API_ROOT}${route}`, {
-			method: "GET",
-			headers: headers ?? {}
-		})
-		console.log(`${res.status} ${res.statusText} (${res.headers.get("Content-Type")})`)
+	private async get(route: string, headers?: HeaderMap): Promise<Result<{ res: Response, data: unknown }, Error>> {
+		const result = await this.getPlain(route, headers)
+		if (!result.ok) return result
+
+		const res = result.value
 		
 		try {
 			const data = await res.json()
 			return ok({ res, data })
 		} catch (e) {
-			console.log("JSON parse failed.")
 			return err(new Error("Failed to parse response as JSON.", { cause: e }))
-		} finally {
-			console.groupEnd()
-		}
+		} 
 	}
 
 }
@@ -172,11 +203,17 @@ export default class WplaceAPI {
 export type APIOptions = {
 	/** Base URL for the API */
 	API_ROOT: string
+	/** User-Agent used for HTTP requests */
+	userAgent: string
+	/** Default time in MS to wait before retrying request after 429 response */
+	defaultRetryAfter: number
 }
 
 /** Default options for the Wplace API client */
 const DEFAULT_API_OPTIONS: APIOptions = {
-	API_ROOT: "https://backend.wplace.live"
+	API_ROOT: "https://backend.wplace.live",
+	userAgent: "wplace-api-client/0.1",
+	defaultRetryAfter: 20000
 }
 
 function compileOptions<OptionsType extends object>(options: Partial<OptionsType> | undefined, defaultOptions: OptionsType): OptionsType {
@@ -202,4 +239,8 @@ async function saveFile(path: string, data: Buffer) {
 	} catch (e) {
 		throw new Error(`Failed to write tile to ${path}.`, { cause: e })
 	}
+}
+
+function sleep(ms: number) {
+	return new Promise(resolve => setTimeout(resolve, ms))
 }
