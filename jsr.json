@@ -1,8 +1,13 @@
 {
   "name": "@j0code/wplace-api",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "license": "GPL-3.0-or-later",
-  "exports": "./src/main.ts",
+  "exports": {
+	".": "./src/main.ts",
+	"./result": "./src/result.ts",
+	"./types": "./src/types.ts",
+	"./routes": "./src/routes.ts"
+  },
   "exclude": [
 	"Wplace API.md"
   ]

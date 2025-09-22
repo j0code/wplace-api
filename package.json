@@ -1,6 +1,6 @@
 {
   "name": "wplace-api",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Unofficial library to interact with the Wplace.live backend API",
   "keywords": [
     "wplace",
