@@ -192,6 +192,17 @@ Requires Authentication
 > 
 > Pixels **have** to be placed by humans. Botting is against Wplace's offical rules.
 
+#### Banned response
+
+> **451** Unavailable For Legal Reasons
+> ```json
+> {
+>     "durationMs": ...,
+>     "err": "griefing",
+>     "suspension": "timeout"
+> }
+> ```
+
 ### Logout
 
 #### Route
@@ -222,6 +233,19 @@ The j cookie is removed via HTTP Response Header (and the session is invalidated
 > Natural Earth Source: https://maps.wplace.live/natural_earth/ne2sr/{z}/{x}/{y}.png
 > 
 > OpenMapTiles Vector Source: described at https://maps.wplace.live/planet
+
+### Shared Location
+
+#### Route
+> **GET** https://wplace.live/
+
+#### Query Parameters
+> |Parameter| Description |
+> |---------|-------------|
+> | lat     | Latitude    |
+> | lng     | Longitude   |
+> | zoom    | Zoom level  |
+> | select  | If 1, selects the pixel at that location |
 
 ## JWT
 
